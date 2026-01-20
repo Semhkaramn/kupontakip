@@ -6,6 +6,8 @@ export interface Match {
   away1h: number;
   home2h: number;
   away2h: number;
+  firstHalfFinished: boolean;
+  secondHalfFinished: boolean;
   status: string;
   createdAt: Date;
   updatedAt: Date;
