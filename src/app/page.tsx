@@ -220,7 +220,7 @@ export default function Home() {
       const newValue = !match.firstHalfFinished;
 
       // İlk yarı geri alınırsa ikinci yarı da geri alınmalı
-      const updates: Record<string, boolean> = { firstHalfFinished: newValue };
+      const updates: Record<string, boolean | string> = { firstHalfFinished: newValue };
       if (!newValue && match.secondHalfFinished) {
         updates.secondHalfFinished = false;
         updates.status = "live";
