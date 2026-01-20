@@ -14,17 +14,19 @@ datasource db {
 }
 
 model Match {
-  id        String   @id @default(cuid())
-  homeTeam  String
-  awayTeam  String
-  home1h    Int      @default(0)
-  away1h    Int      @default(0)
-  home2h    Int      @default(0)
-  away2h    Int      @default(0)
-  status    String   @default("live") // live, finished
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  bets      Bet[]
+  id                 String   @id @default(cuid())
+  homeTeam           String
+  awayTeam           String
+  home1h             Int      @default(0)
+  away1h             Int      @default(0)
+  home2h             Int      @default(0)
+  away2h             Int      @default(0)
+  firstHalfFinished  Boolean  @default(false)
+  secondHalfFinished Boolean  @default(false)
+  status             String   @default("live") // live, finished
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  bets               Bet[]
 }
 
 model Coupon {
