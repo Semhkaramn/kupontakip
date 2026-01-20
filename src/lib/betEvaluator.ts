@@ -15,20 +15,30 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
   const betType = bet.betType;
   const betValue = bet.betValue;
 
+  // Maç durumunu kontrol et (status kontrolü için match.status kullanılabilir)
+  const isMatchFinished = match.status === "finished";
+
   switch (betType) {
     case "ms":
       if (betValue === "1") {
         if (homeTotal > awayTotal) return "won";
         if (homeTotal < awayTotal) return "lost";
+        // Beraberlik durumunda maç bittiyse lost, devam ediyorsa pending
+        if (isMatchFinished && homeTotal === awayTotal) return "lost";
         return "pending";
       }
       if (betValue === "X") {
-        if (homeTotal === awayTotal && totalGoals > 0) return "won";
-        return "pending";
+        // Beraberlik - 0-0 da dahil
+        if (homeTotal === awayTotal) {
+          if (isMatchFinished) return "won";
+          return "pending"; // Maç devam ediyorsa henüz kazanılmadı
+        }
+        return "pending"; // Skor eşit değilse ama maç devam ediyorsa hala şans var
       }
       if (betValue === "2") {
         if (awayTotal > homeTotal) return "won";
         if (awayTotal < homeTotal) return "lost";
+        if (isMatchFinished && homeTotal === awayTotal) return "lost";
         return "pending";
       }
       break;
@@ -40,7 +50,9 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
         return "pending";
       }
       if (betValue === "X") {
+        // İlk yarı beraberlik - 0-0 da dahil
         if (home1h === away1h && total1h > 0) return "won";
+        if (home1h === away1h && total1h === 0) return "pending"; // 0-0 devam ediyor olabilir
         return "pending";
       }
       if (betValue === "2") {
@@ -53,13 +65,17 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
     case "tg_ust": {
       const limit = parseFloat(betValue);
       if (totalGoals > limit) return "won";
+      if (isMatchFinished && totalGoals <= limit) return "lost";
       return "pending";
     }
 
     case "tg_alt": {
       const limit = parseFloat(betValue);
-      if (totalGoals < limit) return "won";
-      if (totalGoals > limit) return "lost";
+      if (totalGoals < limit) {
+        if (isMatchFinished) return "won";
+        return "pending"; // Maç devam ediyorsa daha gol atılabilir
+      }
+      if (totalGoals >= limit) return "lost";
       return "pending";
     }
 
@@ -91,11 +107,12 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
 
     case "kg_var":
       if (homeTotal > 0 && awayTotal > 0) return "won";
+      if (isMatchFinished && (homeTotal === 0 || awayTotal === 0)) return "lost";
       return "pending";
 
     case "kg_yok":
       if (homeTotal > 0 && awayTotal > 0) return "lost";
-      if (homeTotal === 0 || awayTotal === 0) return "won";
+      if (isMatchFinished && (homeTotal === 0 || awayTotal === 0)) return "won";
       return "pending";
 
     case "iy_kg_var":
@@ -104,23 +121,27 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
 
     case "iy_kg_yok":
       if (home1h > 0 && away1h > 0) return "lost";
-      if (home1h === 0 || away1h === 0) return "won";
+      // İlk yarı bitti mi kontrolü yok, bu yüzden pending
       return "pending";
 
     case "ev_gol_var":
       if (homeTotal > 0) return "won";
+      if (isMatchFinished && homeTotal === 0) return "lost";
       return "pending";
 
     case "ev_gol_yok":
       if (homeTotal > 0) return "lost";
+      if (isMatchFinished && homeTotal === 0) return "won";
       return "pending";
 
     case "dep_gol_var":
       if (awayTotal > 0) return "won";
+      if (isMatchFinished && awayTotal === 0) return "lost";
       return "pending";
 
     case "dep_gol_yok":
       if (awayTotal > 0) return "lost";
+      if (isMatchFinished && awayTotal === 0) return "won";
       return "pending";
 
     case "cs":
@@ -130,6 +151,7 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
       }
       if (betValue === "12") {
         if (homeTotal !== awayTotal) return "won";
+        if (isMatchFinished && homeTotal === awayTotal) return "lost";
         return "pending";
       }
       if (betValue === "X2") {
@@ -164,26 +186,34 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
     case "ev_tg_ust": {
       const limit = parseFloat(betValue);
       if (homeTotal > limit) return "won";
+      if (isMatchFinished && homeTotal <= limit) return "lost";
       return "pending";
     }
 
     case "ev_tg_alt": {
       const limit = parseFloat(betValue);
-      if (homeTotal < limit) return "won";
-      if (homeTotal > limit) return "lost";
+      if (homeTotal < limit) {
+        if (isMatchFinished) return "won";
+        return "pending";
+      }
+      if (homeTotal >= limit) return "lost";
       return "pending";
     }
 
     case "dep_tg_ust": {
       const limit = parseFloat(betValue);
       if (awayTotal > limit) return "won";
+      if (isMatchFinished && awayTotal <= limit) return "lost";
       return "pending";
     }
 
     case "dep_tg_alt": {
       const limit = parseFloat(betValue);
-      if (awayTotal < limit) return "won";
-      if (awayTotal > limit) return "lost";
+      if (awayTotal < limit) {
+        if (isMatchFinished) return "won";
+        return "pending";
+      }
+      if (awayTotal >= limit) return "lost";
       return "pending";
     }
 
@@ -202,8 +232,11 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
       else if (homeTotal < awayTotal) msActual = "2";
       else msActual = "X";
 
-      if (iyActual === iyResult && msActual === msResult) return "won";
-      // Eğer İY veya MS farklıysa ve değişme ihtimali yoksa lost
+      if (iyActual === iyResult && msActual === msResult) {
+        if (isMatchFinished) return "won";
+        return "pending";
+      }
+      // Eğer İY farklıysa ve değişme ihtimali yoksa lost
       if (iyActual !== iyResult) return "lost";
       return "pending";
     }
@@ -211,9 +244,17 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
     case "tek_cift":
       if (betValue === "tek") {
         if (totalGoals % 2 === 1) return "won";
+        if (isMatchFinished && totalGoals % 2 === 0) return "lost";
         return "pending";
       }
-      if (totalGoals % 2 === 0 && totalGoals > 0) return "won";
+      // Çift - 0 da çift sayıdır
+      if (betValue === "cift") {
+        if (totalGoals % 2 === 0) {
+          if (isMatchFinished) return "won";
+          return "pending"; // Maç devam ediyorsa daha gol atılabilir
+        }
+        return "pending";
+      }
       return "pending";
   }
 
