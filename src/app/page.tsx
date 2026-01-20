@@ -465,6 +465,35 @@ export default function Home() {
                       {statusText}
                     </div>
                   </div>
+                  {/* Maç Listesi */}
+                  <div className="coupon-bets-preview">
+                    {!coupon.bets || coupon.bets.length === 0 ? (
+                      <div className="coupon-no-bets">Henuz bahis eklenmedi</div>
+                    ) : (
+                      coupon.bets.map((bet) => {
+                        const match = matches.find((m) => m.id === bet.matchId) || (bet as Bet & { match?: Match }).match;
+                        if (!match) return null;
+
+                        const result = evaluateBet(bet, match);
+                        const homeTotal = match.home1h + match.home2h;
+                        const awayTotal = match.away1h + match.away2h;
+
+                        return (
+                          <div key={bet.id} className={`coupon-bet-preview bet-${result}`}>
+                            <span className="coupon-bet-match">
+                              {match.homeTeam} {homeTotal}-{awayTotal} {match.awayTeam}
+                            </span>
+                            <div className="coupon-bet-info">
+                              <span className="coupon-bet-type">
+                                {betTypeNames[bet.betType] || bet.betType}: {formatBetValue(bet.betType, bet.betValue)}
+                              </span>
+                              <span className={`coupon-bet-status ${result}`} />
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
                 </div>
               );
             })
