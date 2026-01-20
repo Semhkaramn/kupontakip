@@ -75,40 +75,48 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
       }
       break;
 
+    // ÜST bahisleri: Koşul sağlandığında ANINDA kazanır (gol azalmaz!)
     case "iy_ust": {
       const limit = parseFloat(betValue);
+      // Limit aşıldıysa ANINDA kazandı - yarı bitmesini beklemeye gerek yok
       if (total1h > limit) {
-        return isFirstHalfFinished ? "won" : "pending";
+        return "won";
       }
+      // İlk yarı bittiyse ve limit aşılmadıysa kaybetti
       if (isFirstHalfFinished) return "lost";
       return "pending";
     }
 
+    // ALT bahisleri: Limit'e ulaşıldığında ANINDA kaybeder
     case "iy_alt": {
       const limit = parseFloat(betValue);
-      if (total1h >= limit) return "lost"; // Limit'e ulaştıysa kaybetti
+      // Limit'e ulaştıysa ANINDA kaybetti
+      if (total1h >= limit) return "lost";
+      // İlk yarı bittiyse ve limit aşılmadıysa kazandı
       if (isFirstHalfFinished) return "won";
       return "pending";
     }
 
+    // KG VAR: Her iki takım da gol atarsa ANINDA kazanır
     case "iy_kg_var":
       if (home1h > 0 && away1h > 0) {
-        return isFirstHalfFinished ? "won" : "pending";
+        return "won";
       }
       if (isFirstHalfFinished) return "lost";
       return "pending";
 
+    // KG YOK: Bir takım gol atınca hala şans var, her iki takım da atarsa kaybeder
     case "iy_kg_yok":
       if (home1h > 0 && away1h > 0) return "lost";
       if (isFirstHalfFinished) return "won";
       return "pending";
 
     // ==================== İKİNCİ YARI BAHİSLERİ ====================
-    // Bu bahisler sadece maç bitince kesinleşir
     case "2y_ust": {
       const limit = parseFloat(betValue);
+      // Limit aşıldıysa ANINDA kazandı
       if (total2h > limit) {
-        return isMatchFinished ? "won" : "pending";
+        return "won";
       }
       if (isMatchFinished) return "lost";
       return "pending";
@@ -116,17 +124,18 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
 
     case "2y_alt": {
       const limit = parseFloat(betValue);
-      if (total2h >= limit) return "lost"; // Limit'e ulaştıysa kaybetti
+      // Limit'e ulaştıysa ANINDA kaybetti
+      if (total2h >= limit) return "lost";
       if (isMatchFinished) return "won";
       return "pending";
     }
 
     // ==================== TOPLAM GOL BAHİSLERİ ====================
-    // Bu bahisler sadece maç bitince kesinleşir
     case "tg_ust": {
       const limit = parseFloat(betValue);
+      // Limit aşıldıysa ANINDA kazandı - gol sayısı azalmaz!
       if (totalGoals > limit) {
-        return isMatchFinished ? "won" : "pending";
+        return "won";
       }
       if (isMatchFinished) return "lost";
       return "pending";
@@ -134,7 +143,8 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
 
     case "tg_alt": {
       const limit = parseFloat(betValue);
-      if (totalGoals >= limit) return "lost"; // Limit'e ulaştıysa kaybetti
+      // Limit'e ulaştıysa ANINDA kaybetti
+      if (totalGoals >= limit) return "lost";
       if (isMatchFinished) return "won";
       return "pending";
     }
@@ -158,46 +168,53 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
 
     // ==================== KARŞILIKLI GOL BAHİSLERİ ====================
     case "kg_var":
+      // Her iki takım da gol attıysa ANINDA kazandı
       if (homeTotal > 0 && awayTotal > 0) {
-        return isMatchFinished ? "won" : "pending";
+        return "won";
       }
       if (isMatchFinished) return "lost";
       return "pending";
 
     case "kg_yok":
+      // Her iki takım da gol attıysa ANINDA kaybetti
       if (homeTotal > 0 && awayTotal > 0) return "lost";
       if (isMatchFinished) return "won";
       return "pending";
 
     // ==================== TAKIM GOL BAHİSLERİ ====================
     case "ev_gol_var":
+      // Ev sahibi gol attıysa ANINDA kazandı
       if (homeTotal > 0) {
-        return isMatchFinished ? "won" : "pending";
+        return "won";
       }
       if (isMatchFinished) return "lost";
       return "pending";
 
     case "ev_gol_yok":
+      // Ev sahibi gol attıysa ANINDA kaybetti
       if (homeTotal > 0) return "lost";
       if (isMatchFinished) return "won";
       return "pending";
 
     case "dep_gol_var":
+      // Deplasman gol attıysa ANINDA kazandı
       if (awayTotal > 0) {
-        return isMatchFinished ? "won" : "pending";
+        return "won";
       }
       if (isMatchFinished) return "lost";
       return "pending";
 
     case "dep_gol_yok":
+      // Deplasman gol attıysa ANINDA kaybetti
       if (awayTotal > 0) return "lost";
       if (isMatchFinished) return "won";
       return "pending";
 
     case "ev_tg_ust": {
       const limit = parseFloat(betValue);
+      // Limit aşıldıysa ANINDA kazandı
       if (homeTotal > limit) {
-        return isMatchFinished ? "won" : "pending";
+        return "won";
       }
       if (isMatchFinished) return "lost";
       return "pending";
@@ -205,6 +222,7 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
 
     case "ev_tg_alt": {
       const limit = parseFloat(betValue);
+      // Limit'e ulaştıysa ANINDA kaybetti
       if (homeTotal >= limit) return "lost";
       if (isMatchFinished) return "won";
       return "pending";
@@ -212,8 +230,9 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
 
     case "dep_tg_ust": {
       const limit = parseFloat(betValue);
+      // Limit aşıldıysa ANINDA kazandı
       if (awayTotal > limit) {
-        return isMatchFinished ? "won" : "pending";
+        return "won";
       }
       if (isMatchFinished) return "lost";
       return "pending";
@@ -221,6 +240,7 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
 
     case "dep_tg_alt": {
       const limit = parseFloat(betValue);
+      // Limit'e ulaştıysa ANINDA kaybetti
       if (awayTotal >= limit) return "lost";
       if (isMatchFinished) return "won";
       return "pending";
