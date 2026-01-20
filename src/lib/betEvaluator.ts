@@ -27,8 +27,7 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
         if (homeTotal > awayTotal) {
           return isMatchFinished ? "won" : "pending";
         }
-        if (homeTotal < awayTotal) return "lost";
-        // Beraberlik durumunda
+        // Maç bitmeden kaybetmiş sayılmaz - skor değişebilir
         if (isMatchFinished) return "lost";
         return "pending";
       }
@@ -37,14 +36,14 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
           return isMatchFinished ? "won" : "pending";
         }
         // Skor eşit değilse ama maç bitmediyse hala şans var
-        if (!isMatchFinished) return "pending";
-        return "lost";
+        if (isMatchFinished) return "lost";
+        return "pending";
       }
       if (betValue === "2") {
         if (awayTotal > homeTotal) {
           return isMatchFinished ? "won" : "pending";
         }
-        if (awayTotal < homeTotal) return "lost";
+        // Maç bitmeden kaybetmiş sayılmaz
         if (isMatchFinished) return "lost";
         return "pending";
       }
@@ -57,26 +56,22 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
         if (home1h > away1h) {
           return isFirstHalfFinished ? "won" : "pending";
         }
-        if (home1h < away1h) {
-          return isFirstHalfFinished ? "lost" : "pending";
-        }
-        // Beraberlik
-        return isFirstHalfFinished ? "lost" : "pending";
+        if (isFirstHalfFinished) return "lost";
+        return "pending";
       }
       if (betValue === "X") {
         if (home1h === away1h) {
           return isFirstHalfFinished ? "won" : "pending";
         }
-        return isFirstHalfFinished ? "lost" : "pending";
+        if (isFirstHalfFinished) return "lost";
+        return "pending";
       }
       if (betValue === "2") {
         if (away1h > home1h) {
           return isFirstHalfFinished ? "won" : "pending";
         }
-        if (away1h < home1h) {
-          return isFirstHalfFinished ? "lost" : "pending";
-        }
-        return isFirstHalfFinished ? "lost" : "pending";
+        if (isFirstHalfFinished) return "lost";
+        return "pending";
       }
       break;
 
@@ -85,16 +80,14 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
       if (total1h > limit) {
         return isFirstHalfFinished ? "won" : "pending";
       }
-      if (isFirstHalfFinished && total1h <= limit) return "lost";
+      if (isFirstHalfFinished) return "lost";
       return "pending";
     }
 
     case "iy_alt": {
       const limit = parseFloat(betValue);
-      if (total1h < limit) {
-        return isFirstHalfFinished ? "won" : "pending";
-      }
-      if (total1h >= limit) return "lost";
+      if (total1h >= limit) return "lost"; // Limit'e ulaştıysa kaybetti
+      if (isFirstHalfFinished) return "won";
       return "pending";
     }
 
@@ -117,16 +110,14 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
       if (total2h > limit) {
         return isMatchFinished ? "won" : "pending";
       }
-      if (isMatchFinished && total2h <= limit) return "lost";
+      if (isMatchFinished) return "lost";
       return "pending";
     }
 
     case "2y_alt": {
       const limit = parseFloat(betValue);
-      if (total2h < limit) {
-        return isMatchFinished ? "won" : "pending";
-      }
-      if (total2h >= limit) return "lost";
+      if (total2h >= limit) return "lost"; // Limit'e ulaştıysa kaybetti
+      if (isMatchFinished) return "won";
       return "pending";
     }
 
@@ -137,16 +128,14 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
       if (totalGoals > limit) {
         return isMatchFinished ? "won" : "pending";
       }
-      if (isMatchFinished && totalGoals <= limit) return "lost";
+      if (isMatchFinished) return "lost";
       return "pending";
     }
 
     case "tg_alt": {
       const limit = parseFloat(betValue);
-      if (totalGoals < limit) {
-        return isMatchFinished ? "won" : "pending";
-      }
-      if (totalGoals >= limit) return "lost";
+      if (totalGoals >= limit) return "lost"; // Limit'e ulaştıysa kaybetti
+      if (isMatchFinished) return "won";
       return "pending";
     }
 
@@ -210,16 +199,14 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
       if (homeTotal > limit) {
         return isMatchFinished ? "won" : "pending";
       }
-      if (isMatchFinished && homeTotal <= limit) return "lost";
+      if (isMatchFinished) return "lost";
       return "pending";
     }
 
     case "ev_tg_alt": {
       const limit = parseFloat(betValue);
-      if (homeTotal < limit) {
-        return isMatchFinished ? "won" : "pending";
-      }
       if (homeTotal >= limit) return "lost";
+      if (isMatchFinished) return "won";
       return "pending";
     }
 
@@ -228,28 +215,30 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
       if (awayTotal > limit) {
         return isMatchFinished ? "won" : "pending";
       }
-      if (isMatchFinished && awayTotal <= limit) return "lost";
+      if (isMatchFinished) return "lost";
       return "pending";
     }
 
     case "dep_tg_alt": {
       const limit = parseFloat(betValue);
-      if (awayTotal < limit) {
-        return isMatchFinished ? "won" : "pending";
-      }
       if (awayTotal >= limit) return "lost";
+      if (isMatchFinished) return "won";
       return "pending";
     }
 
     // ==================== ÇİFTE ŞANS BAHİSLERİ ====================
     case "cs":
       if (betValue === "1X") {
+        // Ev sahibi kazanır veya beraberlik
         if (homeTotal >= awayTotal) {
           return isMatchFinished ? "won" : "pending";
         }
-        return "lost";
+        // Deplasman öndeyse bile maç bitmeden kaybetmiş sayılmaz
+        if (isMatchFinished) return "lost";
+        return "pending";
       }
       if (betValue === "12") {
+        // Ev sahibi veya deplasman kazanır (beraberlik hariç)
         if (homeTotal !== awayTotal) {
           return isMatchFinished ? "won" : "pending";
         }
@@ -257,10 +246,13 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
         return "pending";
       }
       if (betValue === "X2") {
+        // Beraberlik veya deplasman kazanır
         if (awayTotal >= homeTotal) {
           return isMatchFinished ? "won" : "pending";
         }
-        return "lost";
+        // Ev sahibi öndeyse bile maç bitmeden kaybetmiş sayılmaz
+        if (isMatchFinished) return "lost";
+        return "pending";
       }
       break;
 
@@ -275,21 +267,24 @@ export function evaluateBet(bet: Bet, match: Match): BetResult {
         if (adjustedHome > awayTotal) {
           return isMatchFinished ? "won" : "pending";
         }
-        if (adjustedHome < awayTotal) return "lost";
-        return isMatchFinished ? "lost" : "pending";
+        // Maç bitmeden kaybetmiş sayılmaz
+        if (isMatchFinished) return "lost";
+        return "pending";
       }
       if (selection === "X") {
         if (adjustedHome === awayTotal) {
           return isMatchFinished ? "won" : "pending";
         }
-        return isMatchFinished ? "lost" : "pending";
+        if (isMatchFinished) return "lost";
+        return "pending";
       }
       if (selection === "2") {
         if (awayTotal > adjustedHome) {
           return isMatchFinished ? "won" : "pending";
         }
-        if (awayTotal < adjustedHome) return "lost";
-        return isMatchFinished ? "lost" : "pending";
+        // Maç bitmeden kaybetmiş sayılmaz
+        if (isMatchFinished) return "lost";
+        return "pending";
       }
       break;
     }
