@@ -31,6 +31,14 @@
   box-sizing: border-box;
 }
 
+html, body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
 body {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg-primary);
@@ -43,23 +51,26 @@ body {
 .container {
   display: flex;
   min-height: 100vh;
-  width: 100%;
+  width: 100vw;
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
 }
 
 /* Panels */
 .left-panel {
-  flex: 0 0 60%;
-  max-width: 60%;
-  padding: 20px;
+  flex: 1 1 60%;
+  min-width: 0;
+  padding: 16px 20px;
   border-right: 1px solid var(--border-color);
   overflow-y: auto;
   max-height: 100vh;
 }
 
 .right-panel {
-  flex: 0 0 40%;
-  max-width: 40%;
-  padding: 20px;
+  flex: 0 0 420px;
+  width: 420px;
+  padding: 16px 20px;
   background: var(--bg-secondary);
   overflow-y: auto;
   max-height: 100vh;
